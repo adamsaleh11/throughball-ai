@@ -2,7 +2,21 @@
 import pytest
 from throughball_ai.mcp.registry import ToolDefinition
 from throughball_ai.mcp.server import _build_registry
-from throughball_ai.mcp.tools import get_match_state, get_fan_hotspots, search_documents
+from throughball_ai.mcp.tools import (
+    get_city_events,
+    get_fan_hotspots,
+    get_match_state,
+    get_venues,
+    search_documents,
+)
+
+TOOL_MODULES = [
+    get_match_state,
+    get_fan_hotspots,
+    search_documents,
+    get_city_events,
+    get_venues,
+]
 
 
 # ---------------------------------------------------------------------------
@@ -53,23 +67,23 @@ def test_validate_rejects_non_callable_handler():
 # ---------------------------------------------------------------------------
 
 def test_each_tool_module_exposes_definition():
-    for module in [get_match_state, get_fan_hotspots, search_documents]:
+    for module in TOOL_MODULES:
         assert hasattr(module, "DEFINITION"), f"{module.__name__} missing DEFINITION"
         assert isinstance(module.DEFINITION, ToolDefinition)
 
 
 def test_tool_definitions_are_valid():
-    for module in [get_match_state, get_fan_hotspots, search_documents]:
+    for module in TOOL_MODULES:
         module.DEFINITION.validate()  # must not raise
 
 
 def test_tool_definition_name_matches_tool_name_constant():
-    for module in [get_match_state, get_fan_hotspots, search_documents]:
+    for module in TOOL_MODULES:
         assert module.DEFINITION.name == module.TOOL_NAME
 
 
 def test_tool_definition_handler_is_module_handler():
-    for module in [get_match_state, get_fan_hotspots, search_documents]:
+    for module in TOOL_MODULES:
         assert module.DEFINITION.handler is module.handler
 
 
@@ -77,9 +91,15 @@ def test_tool_definition_handler_is_module_handler():
 # _build_registry()
 # ---------------------------------------------------------------------------
 
-def test_build_registry_returns_all_three_tools():
+def test_build_registry_returns_required_tools():
     registry = _build_registry()
-    assert set(registry.keys()) == {"get_match_state", "get_fan_hotspots", "search_documents"}
+    assert set(registry.keys()) == {
+        "get_match_state",
+        "get_fan_hotspots",
+        "search_documents",
+        "get_city_events",
+        "get_venues",
+    }
 
 
 def test_build_registry_keys_match_definition_names():

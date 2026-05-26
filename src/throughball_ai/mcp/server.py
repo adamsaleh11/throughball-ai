@@ -8,9 +8,21 @@ from throughball_ai.mcp.registry import ToolDefinition
 from throughball_ai.mcp.settings import MCPSettings
 from throughball_ai.mcp.trace import emit_tool_call_trace, new_id
 from throughball_ai.mcp.wrappers import execute_with_middleware
-from throughball_ai.mcp.tools import get_match_state, get_fan_hotspots, search_documents
+from throughball_ai.mcp.tools import (
+    get_city_events,
+    get_fan_hotspots,
+    get_match_state,
+    get_venues,
+    search_documents,
+)
 
-_TOOL_MODULES = [get_match_state, get_fan_hotspots, search_documents]
+_TOOL_MODULES = [
+    get_match_state,
+    get_fan_hotspots,
+    search_documents,
+    get_city_events,
+    get_venues,
+]
 
 
 def _build_registry() -> dict[str, ToolDefinition]:

@@ -166,4 +166,53 @@ async def test_all_stub_tools_registered():
     names = {t.name for t in tools}
     assert "get_match_state" in names
     assert "get_fan_hotspots" in names
+    assert "get_city_events" in names
+    assert "get_venues" in names
     assert "search_documents" in names
+
+
+@pytest.mark.asyncio
+async def test_get_city_events_returns_seeded_matchday_events():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_city_events", {
+        "city_id": "city_toronto",
+        "category": "matchday",
+    })
+    assert resp["ok"] is True
+    assert resp["tool"] == "get_city_events"
+    assert resp["source_type"] == "seeded"
+    assert resp["telemetry"]["external_api_called"] is False
+    event = resp["data"]["events"][0]
+    for field in ("event_id", "name", "category", "starts_at", "ends_at",
+                  "venue_id", "source_type", "confidence"):
+        assert field in event, f"event missing: {field}"
+
+
+@pytest.mark.asyncio
+async def test_get_venues_returns_seeded_supporter_venues():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_venues", {
+        "city_id": "city_toronto",
+        "venue_type": "pub",
+    })
+    assert resp["ok"] is True
+    assert resp["tool"] == "get_venues"
+    assert resp["source_type"] == "seeded"
+    assert resp["telemetry"]["external_api_called"] is False
+    venue = resp["data"]["venues"][0]
+    for field in ("venue_id", "name", "venue_type", "neighborhood_id",
+                  "address", "geo", "tags", "source_type", "last_updated_at"):
+        assert field in venue, f"venue missing: {field}"
+
+
+@pytest.mark.asyncio
+async def test_new_fan_tools_missing_city_id_returns_invalid_input():
+    mcp = build_mcp_server()
+
+    events_resp = await call(mcp, "get_city_events", {})
+    venues_resp = await call(mcp, "get_venues", {})
+
+    assert events_resp["ok"] is False
+    assert events_resp["error"]["code"] == "INVALID_INPUT"
+    assert venues_resp["ok"] is False
+    assert venues_resp["error"]["code"] == "INVALID_INPUT"
