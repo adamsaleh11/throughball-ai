@@ -40,6 +40,20 @@ def _ok_telemetry(
     }
 
 
+def _error_telemetry(
+    retry_count: int = 0,
+    latency_ms: int = 0,
+) -> dict:
+    return {
+        "degraded": False,
+        "degraded_reason": None,
+        "cache_hit": False,
+        "retry_count": retry_count,
+        "latency_ms": latency_ms,
+        "external_api_called": False,
+    }
+
+
 async def execute_with_middleware(
     *,
     tool_name: str,
@@ -112,12 +126,5 @@ async def execute_with_middleware(
         "ok": False,
         "tool": tool_name,
         "error": {"message": str(last_exc)},
-        "telemetry": {
-            "degraded": False,
-            "degraded_reason": None,
-            "cache_hit": False,
-            "retry_count": retry_count,
-            "latency_ms": elapsed,
-            "external_api_called": False,
-        },
+        "telemetry": _error_telemetry(retry_count=retry_count, latency_ms=elapsed),
     }

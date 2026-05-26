@@ -1,6 +1,7 @@
 from typing import Optional
 
 from throughball_ai.mcp.errors import error_response
+from throughball_ai.mcp.registry import ToolDefinition
 
 TOOL_NAME = "get_match_state"
 TIMEOUT_MS = 1200
@@ -49,3 +50,13 @@ async def handler(
         "source_type": "seeded",
         "data": data,
     }
+
+
+DEFINITION = ToolDefinition(
+    name=TOOL_NAME,
+    handler=handler,
+    timeout_ms=TIMEOUT_MS,
+    cacheable=True,
+    max_retry_count=1,
+    description="Returns current or cached match status, score, clock, and basic momentum inputs.",
+)

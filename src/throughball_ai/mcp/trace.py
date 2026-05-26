@@ -10,8 +10,11 @@ from throughball_ai.mcp.context import RequestContext
 logger = logging.getLogger("throughball_ai.mcp.trace")
 
 
-def _new_id(prefix: str) -> str:
+def new_id(prefix: str) -> str:
     return f"{prefix}_{uuid.uuid4().hex[:16]}"
+
+
+_new_id = new_id  # internal alias kept for backward compat
 
 
 def emit_tool_call_trace(

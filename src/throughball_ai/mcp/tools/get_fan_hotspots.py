@@ -1,6 +1,7 @@
 from typing import Optional
 
 from throughball_ai.mcp.errors import error_response
+from throughball_ai.mcp.registry import ToolDefinition
 
 TOOL_NAME = "get_fan_hotspots"
 TIMEOUT_MS = 1500
@@ -60,3 +61,13 @@ async def handler(
             "computed_at": "2026-06-18T16:00:00Z",
         },
     }
+
+
+DEFINITION = ToolDefinition(
+    name=TOOL_NAME,
+    handler=handler,
+    timeout_ms=TIMEOUT_MS,
+    cacheable=True,
+    max_retry_count=1,
+    description="Returns backend-computed supporter hotspot candidates and evidence.",
+)

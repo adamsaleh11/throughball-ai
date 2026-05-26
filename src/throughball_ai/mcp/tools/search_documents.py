@@ -1,6 +1,7 @@
 from typing import Optional
 
 from throughball_ai.mcp.errors import error_response
+from throughball_ai.mcp.registry import ToolDefinition
 
 TOOL_NAME = "search_documents"
 TIMEOUT_MS = 1800
@@ -39,3 +40,13 @@ async def handler(
             ]
         },
     }
+
+
+DEFINITION = ToolDefinition(
+    name=TOOL_NAME,
+    handler=handler,
+    timeout_ms=TIMEOUT_MS,
+    cacheable=True,
+    max_retry_count=1,
+    description="Searches retrieved evidence documents for agent synthesis.",
+)
