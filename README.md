@@ -26,6 +26,20 @@ Throughball AI orchestration repo for local-first demo development.
 
 ```sh
 cp .env.example .env
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install -e ".[dev]"
+python -m uvicorn throughball_ai.main:app --reload --host 127.0.0.1 --port 8001
 ```
 
-Add implementation-specific setup commands as the AI stack is introduced.
+Health check:
+
+```sh
+curl http://127.0.0.1:8001/health
+```
+
+Run tests:
+
+```sh
+python -m pytest
+```
