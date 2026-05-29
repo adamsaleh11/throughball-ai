@@ -9,6 +9,23 @@ from throughball_ai.config import Settings
 from throughball_ai.model_router import ModelRouter
 
 
+class _PartiallyDegradedMCP:
+    async def call_tool(self, tool_name: str, args: dict):
+        if tool_name == "get_city_events":
+            raise TimeoutError("events unavailable")
+        if tool_name == "get_fan_hotspots":
+            return [
+                _ToolResult(
+                    """{"ok": true, "tool": "get_fan_hotspots", "source_type": "seeded", "data": {"hotspots": []}, "telemetry": {"degraded": false, "external_api_called": false}}"""
+                )
+            ]
+        return [
+            _ToolResult(
+                """{"ok": true, "tool": "get_venues", "source_type": "seeded", "data": {"venues": []}, "telemetry": {"degraded": false, "external_api_called": false}}"""
+            )
+        ]
+
+
 class _ToolResult:
     def __init__(self, text: str) -> None:
         self.text = text
@@ -109,6 +126,63 @@ async def test_agent_answers_fan_zone_question_from_seeded_events_without_live_c
     assert "fan zone" in response["answer"].lower()
     assert "seeded" in response["answer"].lower() or "cached" in response["answer"].lower()
     assert "currently active" not in response["answer"].lower()
+
+
+@pytest.mark.asyncio
+async def test_answer_emits_run_summary_event_with_all_required_fields():
+    captured = []
+    agent = FanGatheringAgent(
+        model_router=ModelRouter(Settings()),
+        metrics_writer=captured.append,
+    )
+
+    response = await agent.answer(
+        FanGatheringRequest(
+            city_id="city_toronto",
+            match_id="match_123",
+            question="Where are Argentina fans gathering?",
+        )
+    )
+
+    assert len(captured) == 1
+    event = captured[0]
+
+    assert event["event_type"] == "agent_run_completed"
+    assert event["tool_call_count"] == 3
+    assert set(event["tool_latencies"].keys()) == {
+        "get_fan_hotspots",
+        "get_city_events",
+        "get_venues",
+    }
+    assert event["final_confidence"] == response["confidence"]
+    assert event["degraded"] == response["degraded"]
+    assert event["agent_name"] == "fan_gathering"
+    assert "agent_run_id" in response["telemetry"]
+    assert "trace_id" in response["telemetry"]
+    assert event["agent_run_id"] == response["telemetry"]["agent_run_id"]
+
+
+@pytest.mark.asyncio
+async def test_answer_emits_degraded_true_when_tool_fails():
+    captured = []
+    agent = FanGatheringAgent(
+        model_router=ModelRouter(Settings()),
+        mcp_factory=lambda: _PartiallyDegradedMCP(),
+        metrics_writer=captured.append,
+    )
+
+    await agent.answer(
+        FanGatheringRequest(
+            city_id="city_toronto",
+            match_id="match_123",
+            team_id="team_argentina",
+        )
+    )
+
+    assert len(captured) == 1
+    event = captured[0]
+    assert event["degraded"] is True
+    assert event["tool_call_count"] == 3
 
 
 @pytest.mark.asyncio

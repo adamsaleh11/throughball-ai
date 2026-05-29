@@ -1,5 +1,6 @@
 import pytest
 from throughball_ai.mcp.context import RequestContext
+from throughball_ai.mcp.schemas import MatchStateInput
 
 
 def test_cache_miss_on_first_call():
@@ -38,8 +39,21 @@ def test_tool_call_count_starts_at_zero():
     assert ctx.tool_call_count == 0
 
 
+def test_request_context_carries_budget_and_external_policy():
+    ctx = RequestContext(request_id="req_1", trace_id="tr_1", max_tool_calls=3)
+    assert ctx.max_tool_calls == 3
+    assert ctx.allow_external is False
+
+
 def test_tool_call_count_increments():
     ctx = RequestContext(request_id="req_1", trace_id="tr_1")
     ctx.tool_call_count += 1
     ctx.tool_call_count += 1
     assert ctx.tool_call_count == 2
+
+
+def test_cache_key_normalizes_validated_schema_defaults():
+    ctx = RequestContext(request_id="req_1", trace_id="tr_1")
+    validated = MatchStateInput(match_id="m1").model_dump()
+    ctx.set_cached("get_match_state", validated, {"ok": True})
+    assert ctx.get_cached("get_match_state", {"match_id": "m1"}) is not None

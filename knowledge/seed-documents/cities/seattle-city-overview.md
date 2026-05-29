@@ -3,53 +3,33 @@
 ## Metadata
 
 city: Seattle
-country: USA
+country: United States
 team: null
 category: city-overview
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/seattle
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/seattle
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://www.lumenfield.com/
+- https://visitseattle.org/
+- https://www.soundtransit.org/
+last_updated: 2026-05-27
 confidence: medium
-tags: seattle,city-overview,world-cup,fifa-2026,football,travel
+tags: seattle,city-overview,world-cup-2026,football,travel
 
-## Summary
+## City Snapshot
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Seattle is a downtown stadium host with strong walkability and established supporter culture. The matchday anchor is Lumen Field in Seattle, with visitor activity likely distributed across Pioneer Square, International District, Capitol Hill, Waterfront, Belltown. A useful answer should explain the city shape first: where fans sleep, where they socialize, how they reach the venue, and what constraints change after the match.
 
-## Main Content
+## World Cup Travel Intelligence
 
-### Stadium and Matchday Context
+The city overview should route broad questions toward the correct deeper category. Venue questions belong in stadium guidance, route questions in transportation, and supporter-social questions in fan-hotspots. For Seattle, the most important planning pattern is: Many central visitors can use light rail or walk, but the station surge after the match still needs buffers. Tourism anchors include Pike Place Market, Seattle Center, Waterfront, Museum of Pop Culture, but the AI should not turn those into a ranked itinerary unless the backend has sequenced candidates.
 
-Lumen Field is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Retrieve this document for city orientation, host-market summaries, neighborhood tradeoffs, and high-level supporter travel context. Strong terms: Seattle, Lumen Field, Seattle Stadium, Pioneer Square, International District, Capitol Hill, Waterfront, Belltown, World Cup 2026 city guide.
 
-Important supporter and nightlife areas include Capitol Hill, Pioneer Square, Waterfront. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes Link Light Rail, ferries. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include Pike Place Market, Space Needle. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Waterfront fan parks expected to become major hubs. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-seattle, Lumen Field, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://www.lumenfield.com/, https://visitseattle.org/, and https://www.soundtransit.org/. City geography, venue identity, and official visitor resources are higher-confidence context. Neighborhood energy and supporter flow are curated planning signals, not live crowd measurements.

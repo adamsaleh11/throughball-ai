@@ -62,3 +62,41 @@ def emit_tool_call_trace(
         f.write(line + "\n")
 
     return event
+
+
+def emit_reasoning_step_trace(
+    *,
+    agent_run_id: str,
+    trace_id: str,
+    plan: str,
+    tools_used: list,
+    fallback_plan: bool,
+    jsonl_path: str = "telemetry/traces.jsonl",
+    environment: str = "local",
+    service: str = "throughball-ai",
+    writer: Optional[callable] = None,
+) -> dict:
+    event = {
+        "event_type": "agent_reasoning_step",
+        "event_version": "1.0",
+        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "environment": environment,
+        "service": service,
+        "agent_run_id": agent_run_id,
+        "trace_id": trace_id,
+        "plan": plan,
+        "tools_used": tools_used,
+        "fallback_plan": fallback_plan,
+    }
+
+    line = json.dumps(event, separators=(",", ":"), sort_keys=True)
+    logger.info(line)
+
+    if writer is not None:
+        writer(event)
+    else:
+        os.makedirs(os.path.dirname(jsonl_path) if os.path.dirname(jsonl_path) else ".", exist_ok=True)
+        with open(jsonl_path, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+
+    return event

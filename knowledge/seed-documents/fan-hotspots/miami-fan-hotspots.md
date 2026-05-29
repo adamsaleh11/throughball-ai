@@ -3,53 +3,33 @@
 ## Metadata
 
 city: Miami
-country: USA
+country: United States
 team: null
 category: fan-hotspots
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/miami
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/miami
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://www.hardrockstadium.com/
+- https://www.miamiandbeaches.com/
+- https://www.miamidade.gov/global/transportation/home.page
+last_updated: 2026-05-27
 confidence: medium
-tags: miami,fan-hotspots,world-cup,fifa-2026,football,travel
+tags: miami,fan-hotspots,world-cup-2026,football,travel
 
-## Summary
+## Verified Signals
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Curated supporter-relevant districts for Miami are Wynwood, Brickell, Downtown Miami, Miami Beach, Little Havana. These are not claims that fans are currently gathered there; they are stable nightlife, visitor, stadium, or transit-adjacent anchors drawn from official tourism geography and local event planning context. Use them as retrieval anchors for watch-party, meetup, and fan-zone explanation.
 
-## Main Content
+## Inferred Signals
 
-### Stadium and Matchday Context
+For high-demand fixtures, supporters are likely to cluster first around food, bars, hotel corridors, and transit-friendly neighborhoods before moving toward Hard Rock Stadium. In Miami, that means the AI can discuss Wynwood, Brickell, Downtown Miami, Miami Beach, Little Havana as likely social geography while clearly separating inferred crowd behavior from verified events. Team-specific gathering claims require current event listings, club announcements, or official fan-zone information.
 
-Hard Rock Stadium is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Use for supporter gathering explanations, watch-location caveats, verified-versus-inferred signal handling, and confidence downgrades. Preserve backend hotspot order; do not calculate hotspot scores, filter venues, or create deterministic rankings in the AI layer.
 
-Important supporter and nightlife areas include Wynwood, Brickell, South Beach. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes Brightline, Metrorail, rideshare corridors. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include South Beach, Little Havana, Bayside. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Premium pricing and nightlife congestion expected. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-miami, Hard Rock Stadium, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://www.hardrockstadium.com/, https://www.miamiandbeaches.com/, and https://www.miamidade.gov/global/transportation/home.page. District and visitor-area grounding comes from official tourism and venue context. Fan density, team-specific turnout, and live activity are inferred unless supported by current verified event sources.

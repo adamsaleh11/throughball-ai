@@ -6,50 +6,30 @@ city: Mexico City
 country: Mexico
 team: null
 category: fan-hotspots
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/mexico/mexico-city
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/mexico/mexico-city
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://www.estadioazteca.com.mx/
+- https://mexicocity.cdmx.gob.mx/
+- https://www.metro.cdmx.gob.mx/
+last_updated: 2026-05-27
 confidence: medium
-tags: mexico-city,fan-hotspots,world-cup,fifa-2026,football,travel
+tags: mexico-city,fan-hotspots,world-cup-2026,football,travel
 
-## Summary
+## Verified Signals
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Curated supporter-relevant districts for Mexico City are Centro Historico, Roma Norte, Condesa, Coyoacan, Polanco. These are not claims that fans are currently gathered there; they are stable nightlife, visitor, stadium, or transit-adjacent anchors drawn from official tourism geography and local event planning context. Use them as retrieval anchors for watch-party, meetup, and fan-zone explanation.
 
-## Main Content
+## Inferred Signals
 
-### Stadium and Matchday Context
+For high-demand fixtures, supporters are likely to cluster first around food, bars, hotel corridors, and transit-friendly neighborhoods before moving toward Estadio Azteca. In Mexico City, that means the AI can discuss Centro Historico, Roma Norte, Condesa, Coyoacan, Polanco as likely social geography while clearly separating inferred crowd behavior from verified events. Team-specific gathering claims require current event listings, club announcements, or official fan-zone information.
 
-Estadio Azteca is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Use for supporter gathering explanations, watch-location caveats, verified-versus-inferred signal handling, and confidence downgrades. Preserve backend hotspot order; do not calculate hotspot scores, filter venues, or create deterministic rankings in the AI layer.
 
-Important supporter and nightlife areas include Roma Norte, Condesa, Zócalo. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes Metro CDMX and Bus Rapid Transit. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include Frida Kahlo Museum, Chapultepec Park. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Altitude and crowd density considerations. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-mexico-city, Estadio Azteca, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://www.estadioazteca.com.mx/, https://mexicocity.cdmx.gob.mx/, and https://www.metro.cdmx.gob.mx/. District and visitor-area grounding comes from official tourism and venue context. Fan density, team-specific turnout, and live activity are inferred unless supported by current verified event sources.

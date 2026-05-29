@@ -3,9 +3,11 @@ import pytest
 from throughball_ai.mcp.registry import ToolDefinition
 from throughball_ai.mcp.server import _build_registry
 from throughball_ai.mcp.tools import (
+    get_city_profile,
     get_city_events,
     get_fan_hotspots,
     get_match_state,
+    get_team_profile,
     get_venues,
     search_documents,
 )
@@ -16,6 +18,8 @@ TOOL_MODULES = [
     search_documents,
     get_city_events,
     get_venues,
+    get_team_profile,
+    get_city_profile,
 ]
 
 
@@ -56,6 +60,12 @@ def test_validate_rejects_negative_retry_count():
         defn.validate()
 
 
+def test_validate_rejects_retry_count_above_cost_cap():
+    defn = ToolDefinition(name="my_tool", handler=_noop, timeout_ms=1000, max_retry_count=2)
+    with pytest.raises(ValueError, match="max_retry_count"):
+        defn.validate()
+
+
 def test_validate_rejects_non_callable_handler():
     defn = ToolDefinition(name="my_tool", handler="not_a_function", timeout_ms=1000)
     with pytest.raises(ValueError, match="handler"):
@@ -87,6 +97,12 @@ def test_tool_definition_handler_is_module_handler():
         assert module.DEFINITION.handler is module.handler
 
 
+def test_tool_definitions_include_schema_contracts():
+    for module in TOOL_MODULES:
+        assert module.DEFINITION.input_schema is not None
+        assert module.DEFINITION.output_schema is not None
+
+
 # ---------------------------------------------------------------------------
 # _build_registry()
 # ---------------------------------------------------------------------------
@@ -99,6 +115,8 @@ def test_build_registry_returns_required_tools():
         "search_documents",
         "get_city_events",
         "get_venues",
+        "get_team_profile",
+        "get_city_profile",
     }
 
 

@@ -3,53 +3,33 @@
 ## Metadata
 
 city: Atlanta
-country: USA
+country: United States
 team: null
 category: city-overview
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/atlanta
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/atlanta
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://mercedesbenzstadium.com/
+- https://discoveratlanta.com/
+- https://www.itsmarta.com/
+last_updated: 2026-05-27
 confidence: medium
-tags: atlanta,city-overview,world-cup,fifa-2026,football,travel
+tags: atlanta,city-overview,world-cup-2026,football,travel
 
-## Summary
+## City Snapshot
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Atlanta is a downtown, indoor-stadium host where fans can combine central hotels, entertainment districts, and stadium access without a long suburban transfer. The matchday anchor is Mercedes-Benz Stadium in Atlanta, with visitor activity likely distributed across Downtown, Centennial Olympic Park, Castleberry Hill, Midtown, Old Fourth Ward. A useful answer should explain the city shape first: where fans sleep, where they socialize, how they reach the venue, and what constraints change after the match.
 
-## Main Content
+## World Cup Travel Intelligence
 
-### Stadium and Matchday Context
+The city overview should route broad questions toward the correct deeper category. Venue questions belong in stadium guidance, route questions in transportation, and supporter-social questions in fan-hotspots. For Atlanta, the most important planning pattern is: MARTA is the cleanest default for central visitors; driving adds parking and exit complexity. Tourism anchors include Centennial Olympic Park, Atlanta BeltLine, Ponce City Market, National Center for Civil and Human Rights, but the AI should not turn those into a ranked itinerary unless the backend has sequenced candidates.
 
-Mercedes-Benz Stadium is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Retrieve this document for city orientation, host-market summaries, neighborhood tradeoffs, and high-level supporter travel context. Strong terms: Atlanta, Mercedes-Benz Stadium, Atlanta Stadium, Downtown, Centennial Olympic Park, Castleberry Hill, Midtown, Old Fourth Ward, World Cup 2026 city guide.
 
-Important supporter and nightlife areas include Midtown, Buckhead, Old Fourth Ward. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes MARTA rail system. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include Georgia Aquarium, Centennial Olympic Park. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Transit crowding expected during knockout fixtures. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-atlanta, Mercedes-Benz Stadium, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://mercedesbenzstadium.com/, https://discoveratlanta.com/, and https://www.itsmarta.com/. City geography, venue identity, and official visitor resources are higher-confidence context. Neighborhood energy and supporter flow are curated planning signals, not live crowd measurements.

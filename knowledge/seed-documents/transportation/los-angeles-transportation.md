@@ -3,53 +3,33 @@
 ## Metadata
 
 city: Los Angeles
-country: USA
+country: United States
 team: null
 category: transportation
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/los-angeles
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/los-angeles
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://www.sofistadium.com/
+- https://www.metro.net/
+- https://www.discoverlosangeles.com/
+last_updated: 2026-05-27
 confidence: medium
-tags: los-angeles,transportation,world-cup,fifa-2026,football,travel
+tags: los-angeles,transportation,world-cup-2026,football,travel
 
-## Summary
+## Matchday Transportation
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Primary transportation context for Los Angeles: LA Metro rail and bus connections, event shuttles, rideshare staging and freeways. Fans should plan by travel corridor and time of day, not by map distance alone. The transportation document should ground mode choice and movement constraints, not compute a full route or live travel time. Stadium travel should be framed around SoFi Stadium in Inglewood and the visitor districts Inglewood, Downtown LA, Koreatown, Santa Monica, Hollywood.
 
-## Main Content
+## Arrival and Exit Planning
 
-### Stadium and Matchday Context
+For major fixtures, most fans should build a 2-4 hour pre-kickoff movement buffer depending on distance from the stadium. The longest buffers apply when the venue is regional or car-dependent; shorter buffers may work in compact downtown stadium districts. After final whistle, the first 45-90 minutes are likely to create the most pressure on transit platforms, parking exits, shuttle queues, and rideshare pickup areas.
 
-SoFi Stadium is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Use for airport-to-city context, stadium arrival planning, transit-vs-rideshare caveats, post-match exit expectations, and degradation language when live service details are missing. Always point users to official transit advisories for final event service.
 
-Important supporter and nightlife areas include Santa Monica, Koreatown, Downtown LA. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes Metro Rail, LAX shuttles. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include Hollywood, Venice Beach, Griffith Observatory. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Heavy vehicle traffic expected throughout tournament. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-los-angeles, SoFi Stadium, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://www.sofistadium.com/, https://www.discoverlosangeles.com/, and https://www.metro.net/. Transit agency names, stadium geography, and broad mode availability are stable source-backed facts. Service frequency, road closures, shuttle operations, and disruptions are volatile and must not be invented.

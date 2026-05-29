@@ -1,11 +1,14 @@
 import asyncio
 import json
+import time
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from throughball_ai.config import Settings, get_settings
 from throughball_ai.mcp.server import build_mcp_server
+from throughball_ai.mcp.trace import emit_reasoning_step_trace, new_id
 from throughball_ai.model_router import ModelRoute, ModelRouter
+from throughball_ai.telemetry import RunMetricsAccumulator
 
 AGENT_NAME = "fan_gathering"
 
@@ -14,6 +17,22 @@ TEAM_ALIASES = {
     "brazil": "team_brazil",
     "canada": "team_canada",
 }
+
+_CANNED_PLAN = (
+    "Calling get_fan_hotspots, get_city_events, and get_venues to answer the question."
+)
+
+_BANNED_FRESHNESS_PHRASES = (
+    "currently",
+    "right now",
+    "live",
+    "confirmed gathering",
+    "are there now",
+)
+
+_SEEDED_SOURCE_TYPES = {"seeded", "cached"}
+
+_TOOL_NAMES = ["get_fan_hotspots", "get_city_events", "get_venues"]
 
 
 @dataclass(frozen=True)
@@ -27,19 +46,80 @@ class FanGatheringRequest:
     max_answer_chars: int = 480
 
 
+def _groundedness_check(answer: str, tool_results: list[dict]) -> dict:
+    has_seeded = any(
+        r.get("source_type") in _SEEDED_SOURCE_TYPES for r in tool_results
+    )
+    if not has_seeded:
+        return {"passed": True, "reason": "No seeded or cached data — freshness check not applicable."}
+
+    lower = answer.lower()
+    for phrase in _BANNED_FRESHNESS_PHRASES:
+        if phrase in lower:
+            return {
+                "passed": False,
+                "reason": (
+                    f"Answer contains '{phrase}' but underlying data is seeded/cached, "
+                    "not live confirmation."
+                ),
+            }
+
+    return {"passed": True, "reason": "Answer is grounded — no banned freshness phrases detected."}
+
+
 class FanGatheringAgent:
     def __init__(
         self,
         model_router: Optional[ModelRouter] = None,
         settings: Optional[Settings] = None,
         mcp_factory: Any = build_mcp_server,
+        metrics_writer: Optional[Callable[[dict[str, Any]], None]] = None,
+        plan_adapter: Optional[Callable] = None,
+        synthesis_adapter: Optional[Callable] = None,
+        llm_self_check: bool = False,
+        coordinator: Any = None,
+        reasoning_trace_writer: Optional[Callable[[dict], None]] = None,
     ) -> None:
         self._settings = settings or get_settings()
         self._model_router = model_router or ModelRouter(self._settings)
         self._mcp_factory = mcp_factory
+        self._metrics_writer = metrics_writer
+        self._plan_adapter = plan_adapter
+        self._synthesis_adapter = synthesis_adapter
+        self._llm_self_check = llm_self_check
+        self._coordinator = coordinator
+        self._reasoning_trace_writer = reasoning_trace_writer
 
     async def answer(self, request: FanGatheringRequest) -> dict:
+        agent_run_id = new_id("ar")
+        trace_id = new_id("tr")
+        session_id = new_id("sess")
+        run_start = time.monotonic()
+
+        accumulator = RunMetricsAccumulator(
+            agent_run_id=agent_run_id,
+            session_id=session_id,
+            trace_id=trace_id,
+            request_id=new_id("req"),
+            agent_name=AGENT_NAME,
+            writer=self._metrics_writer,
+        )
+
         route = self._model_router.route(AGENT_NAME)
+
+        # --- Phase 1: Plan (Thought) ---
+        plan, fallback_plan = await self._run_plan_step(request, _TOOL_NAMES)
+
+        emit_reasoning_step_trace(
+            agent_run_id=agent_run_id,
+            trace_id=trace_id,
+            plan=plan,
+            tools_used=_TOOL_NAMES,
+            fallback_plan=fallback_plan,
+            writer=self._reasoning_trace_writer,
+        )
+
+        # --- Phase 2: Act (Tools in parallel) ---
         team_id = request.team_id or _resolve_team_alias(request.question)
         fan_zone_question = _is_fan_zone_question(request.question)
         team_unresolved = team_id is None and not fan_zone_question
@@ -76,23 +156,75 @@ class FanGatheringAgent:
         ]
 
         results = await asyncio.gather(
-            *[_call_tool(mcp, name, args) for name, args in tool_specs],
+            *[_call_tool_timed(mcp, name, args) for name, args in tool_specs],
             return_exceptions=True,
         )
-        normalized = [
-            _normalize_tool_result(name, result)
-            for (name, _args), result in zip(tool_specs, results)
-        ]
+
+        # --- Phase 3: Observe ---
+        normalized = []
+        for (name, _args), result in zip(tool_specs, results):
+            if isinstance(result, Exception):
+                accumulator.record_tool_call(name, latency_ms=0, degraded=True)
+                normalized.append(_normalize_tool_result(name, result))
+            else:
+                tool_result, latency_ms = result
+                degraded = bool(
+                    tool_result.get("telemetry", {}).get("degraded")
+                    or not tool_result.get("ok", True)
+                )
+                accumulator.record_tool_call(name, latency_ms=latency_ms, degraded=degraded)
+                normalized.append(tool_result)
 
         confidence = _compute_confidence(normalized, team_unresolved=team_unresolved)
-        answer = _synthesize_answer(
-            normalized,
-            confidence,
-            request.max_answer_chars,
-            team_unresolved=team_unresolved,
-            fan_zone_question=fan_zone_question,
-        )
+
+        # --- Phase 4: Answer + Self-Check ---
+        synthesis_fallback = False
+        if self._synthesis_adapter is not None:
+            try:
+                answer = await self._synthesis_adapter(
+                    plan, normalized, confidence, request.max_answer_chars
+                )
+            except Exception:
+                synthesis_fallback = True
+                answer = _synthesize_answer(
+                    normalized,
+                    confidence,
+                    request.max_answer_chars,
+                    team_unresolved=team_unresolved,
+                    fan_zone_question=fan_zone_question,
+                )
+        else:
+            answer = _synthesize_answer(
+                normalized,
+                confidence,
+                request.max_answer_chars,
+                team_unresolved=team_unresolved,
+                fan_zone_question=fan_zone_question,
+            )
+
+        self_check = _groundedness_check(answer, normalized)
+
         tool_sources = [_tool_source(result) for result in normalized]
+        degraded = any(source["degraded"] for source in tool_sources)
+
+        total_latency_ms = int((time.monotonic() - run_start) * 1000)
+        accumulator.finalize(
+            final_confidence=confidence["label"],
+            total_latency_ms=total_latency_ms,
+            self_check_passed=self_check["passed"],
+        )
+
+        telemetry: dict[str, Any] = {
+            "agent_name": AGENT_NAME,
+            "tool_calls": len(tool_specs),
+            "selected_model": route.model,
+            "degraded": degraded,
+            "confidence": confidence["label"],
+            "agent_run_id": agent_run_id,
+            "trace_id": trace_id,
+        }
+        if synthesis_fallback:
+            telemetry["synthesis_fallback"] = True
 
         return {
             "answer": answer,
@@ -102,15 +234,21 @@ class FanGatheringAgent:
             "inferred_signals": _inferred_signals(normalized),
             "confidence_details": confidence,
             "tool_sources": tool_sources,
-            "degraded": any(source["degraded"] for source in tool_sources),
-            "telemetry": {
-                "agent_name": AGENT_NAME,
-                "tool_calls": len(tool_specs),
-                "selected_model": route.model,
-                "degraded": any(source["degraded"] for source in tool_sources),
-                "confidence": confidence["label"],
-            },
+            "degraded": degraded,
+            "self_check": self_check,
+            "telemetry": telemetry,
         }
+
+    async def _run_plan_step(
+        self, request: FanGatheringRequest, tool_names: list[str]
+    ) -> tuple[str, bool]:
+        if self._plan_adapter is None:
+            return _CANNED_PLAN, True
+        try:
+            plan = await self._plan_adapter(request, tool_names)
+            return plan, False
+        except Exception:
+            return _CANNED_PLAN, True
 
 
 class GeminiFlashSynthesisAdapter:
@@ -146,9 +284,11 @@ class GeminiFlashSynthesisAdapter:
         return response.text or ""
 
 
-async def _call_tool(mcp: Any, tool_name: str, args: dict) -> dict:
+async def _call_tool_timed(mcp: Any, tool_name: str, args: dict) -> tuple[dict, int]:
+    t0 = time.monotonic()
     result = await mcp.call_tool(tool_name, args)
-    return json.loads(result[0].text)
+    latency_ms = int((time.monotonic() - t0) * 1000)
+    return json.loads(result[0].text), latency_ms
 
 
 def _resolve_team_alias(question: Optional[str]) -> Optional[str]:

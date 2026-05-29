@@ -3,53 +3,33 @@
 ## Metadata
 
 city: Kansas City
-country: USA
+country: United States
 team: null
 category: tourism
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/kansas-city
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/kansas-city
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://www.chiefs.com/stadium/
+- https://www.visitkc.com/
+- https://ridekc.org/
+last_updated: 2026-05-27
 confidence: medium
-tags: kansas-city,tourism,world-cup,fifa-2026,football,travel
+tags: kansas-city,tourism,world-cup-2026,football,travel
 
-## Summary
+## Visitor Context
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Tourism retrieval for Kansas City should connect football travel with practical visitor anchors: National WWI Museum and Memorial, City Market, 18th and Vine, Union Station. These places help orient a fan's day, but they are not an itinerary by themselves. The AI should explain fit, distance, and matchday practicality while the backend handles ranking and sequencing.
 
-## Main Content
+## Matchday Pairing
 
-### Stadium and Matchday Context
+Good tourism advice depends on the match window. Before a match, favor attractions and districts that do not create a risky transfer to Arrowhead Stadium. After a match, favor areas with realistic return transport and late-evening food or hotel access. For Kansas City, useful pairing districts include Power & Light District, Crossroads, Westport, River Market, Truman Sports Complex; the constraint is: Downtown entertainment is not adjacent to the stadium, so fans need a transfer plan to the complex.
 
-Arrowhead Stadium is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Use for short-stay ideas, neighborhood explanations, attraction context, and tradeoff language. Avoid claiming opening hours, ticket availability, prices, or crowd levels unless a current official source is retrieved.
 
-Important supporter and nightlife areas include Power and Light District, Crossroads. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes KC Streetcar and shuttle systems. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include National WWI Museum, barbecue districts. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Tailgating traffic expected to be significant. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-kansas-city, Arrowhead Stadium, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://www.chiefs.com/stadium/, https://www.visitkc.com/, and https://ridekc.org/. Major attractions and visitor districts are grounded in official tourism resources. Popularity, wait times, hours, and event overlays are volatile and should be checked against current sources before making firm recommendations.

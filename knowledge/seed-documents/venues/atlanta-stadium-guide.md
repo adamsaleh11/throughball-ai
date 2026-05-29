@@ -3,53 +3,33 @@
 ## Metadata
 
 city: Atlanta
-country: USA
+country: United States
 team: null
 category: stadium-guide
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
-confidence: medium
-tags: atlanta,stadium-guide,world-cup,fifa-2026,football,travel
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/atlanta
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/atlanta
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://mercedesbenzstadium.com/
+- https://discoveratlanta.com/
+- https://www.itsmarta.com/
+last_updated: 2026-05-27
+confidence: high
+tags: atlanta,stadium-guide,world-cup-2026,football,travel
 
-## Summary
+## Venue Context
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Mercedes-Benz Stadium will be referenced in tournament materials as Atlanta Stadium. It is located around downtown Atlanta near Centennial Olympic Park and should be described as a Atlanta matchday venue, not simply a generic Atlanta attraction. FIFA stadium information and the official venue source should be treated as the primary grounding for address, capacity, and venue identity.
 
-## Main Content
+## Stadium Constraints and Fan Flow
 
-### Stadium and Matchday Context
+Expected tournament capacity is around 71,000 event seats depending on configuration. The fan-flow question is not just where the stadium is, but what the venue does to the day: MARTA is the cleanest default for central visitors; driving adds parking and exit complexity. Nearby or connected districts for retrieval include Downtown, Centennial Olympic Park, Castleberry Hill, Midtown, Old Fourth Ward. Avoid promising gate policies, bag rules, alcohol rules, or exact entry procedures unless official event-day guidance is available.
 
-Mercedes-Benz Stadium is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Use this file for stadium identity, arrival buffers, venue-city distinction, nearby districts, and venue-specific caveats. Do not use it to rank fan hotspots or compute travel routes.
 
-Important supporter and nightlife areas include Midtown, Buckhead, Old Fourth Ward. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes MARTA rail system. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include Georgia Aquarium, Centennial Olympic Park. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Transit crowding expected during knockout fixtures. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-atlanta, Mercedes-Benz Stadium, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://mercedesbenzstadium.com/, https://discoveratlanta.com/, and https://www.itsmarta.com/. Venue name, host-city role, and broad location are high-confidence facts from official tournament and venue sources. Capacity and operational details can change with tournament configuration, so answers should phrase them as approximate unless current FIFA data is provided.

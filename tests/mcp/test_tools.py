@@ -121,23 +121,57 @@ async def test_get_fan_hotspots_missing_city_id_returns_invalid_input():
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_search_documents_returns_ok_shape():
+async def test_search_documents_returns_ok_shape(monkeypatch):
+    monkeypatch.delenv("SUPABASE_DB_URL", raising=False)
+    monkeypatch.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
+    monkeypatch.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+
     mcp = build_mcp_server()
     resp = await call(mcp, "search_documents", {"query": "supporter pubs near stadium"})
     assert resp["ok"] is True
     assert resp["tool"] == "search_documents"
-    assert resp["source_type"] == "seeded"
+    assert resp["source_type"] == "none"
+    assert resp["data"]["retrieval_confidence"] == "none"
+    assert resp["data"]["degraded"] is True
     assert isinstance(resp["data"]["results"], list)
 
 
 @pytest.mark.asyncio
-async def test_search_documents_result_fields():
+async def test_search_documents_result_fields(monkeypatch):
+    from throughball_ai.mcp.tools import search_documents
+
+    class FakeRetrievalService:
+        async def search(self, **_kwargs):
+            return {
+                "chunks": ["Supporter pub evidence."],
+                "source_paths": ["knowledge/doc.md"],
+                "similarity_scores": [0.8],
+                "document_titles": ["Doc"],
+                "retrieval_confidence": "high",
+                "degraded": False,
+                "telemetry": {"external_search_used": False},
+                "results": [
+                    {
+                        "document_id": "doc_1",
+                        "document_type": "venues",
+                        "title": "Doc",
+                        "snippet": "Supporter pub evidence.",
+                        "source_type": "internal",
+                        "relevance_score": 0.8,
+                        "created_at": None,
+                    }
+                ],
+            }
+
+    search_documents.set_retrieval_service(FakeRetrievalService())
+    monkeypatch.setattr(search_documents, "_retrieval_configured", lambda: True)
     mcp = build_mcp_server()
     resp = await call(mcp, "search_documents", {"query": "supporter pubs"})
     result = resp["data"]["results"][0]
     for field in ("document_id", "document_type", "title", "snippet",
                   "source_type", "relevance_score", "created_at"):
         assert field in result, f"result missing: {field}"
+    search_documents.set_retrieval_service(None)
 
 
 @pytest.mark.asyncio
@@ -146,6 +180,15 @@ async def test_search_documents_missing_query_returns_invalid_input():
     resp = await call(mcp, "search_documents", {})
     assert resp["ok"] is False
     assert resp["error"]["code"] == "INVALID_INPUT"
+
+
+@pytest.mark.asyncio
+async def test_search_documents_invalid_limit_returns_invalid_input():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "search_documents", {"query": "pubs", "limit": 0})
+    assert resp["ok"] is False
+    assert resp["error"]["code"] == "INVALID_INPUT"
+    assert resp["error"]["details"]["field"] == "limit"
 
 
 @pytest.mark.asyncio
@@ -169,6 +212,39 @@ async def test_all_stub_tools_registered():
     assert "get_city_events" in names
     assert "get_venues" in names
     assert "search_documents" in names
+    assert "get_team_profile" in names
+    assert "get_city_profile" in names
+
+
+@pytest.mark.asyncio
+async def test_all_tools_return_declared_output_schema_shapes(monkeypatch):
+    from throughball_ai.mcp.server import _build_registry
+    from throughball_ai.mcp.tools import search_documents
+
+    search_documents.set_retrieval_service(None)
+    monkeypatch.delenv("SUPABASE_DB_URL", raising=False)
+    monkeypatch.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
+    monkeypatch.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+
+    mcp = build_mcp_server()
+    registry = _build_registry()
+    calls = {
+        "get_match_state": {"match_id": "match_123"},
+        "get_fan_hotspots": {
+            "city_id": "city_toronto",
+            "match_id": "match_123",
+            "team_id": "team_usa",
+        },
+        "get_city_events": {"city_id": "city_toronto"},
+        "get_venues": {"city_id": "city_toronto"},
+        "search_documents": {"query": "supporter pubs"},
+        "get_team_profile": {"team_id": "team_argentina"},
+        "get_city_profile": {"city_id": "city_toronto"},
+    }
+
+    for tool_name, args in calls.items():
+        resp = await call(mcp, tool_name, args)
+        registry[tool_name].output_schema.model_validate(resp)
 
 
 @pytest.mark.asyncio
@@ -216,3 +292,175 @@ async def test_new_fan_tools_missing_city_id_returns_invalid_input():
     assert events_resp["error"]["code"] == "INVALID_INPUT"
     assert venues_resp["ok"] is False
     assert venues_resp["error"]["code"] == "INVALID_INPUT"
+
+
+@pytest.mark.asyncio
+async def test_get_team_profile_returns_seeded_context():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_team_profile", {"team_id": "team_argentina"})
+    assert resp["ok"] is True
+    assert resp["tool"] == "get_team_profile"
+    assert resp["source_type"] == "seeded"
+    assert resp["telemetry"]["external_api_called"] is False
+    data = resp["data"]
+    for field in ("team_id", "name", "country", "aliases", "supporter_notes",
+                  "rivalries", "known_supporter_areas", "evidence_ids",
+                  "last_updated_at"):
+        assert field in data, f"team profile missing: {field}"
+
+
+@pytest.mark.asyncio
+async def test_get_city_profile_returns_seeded_context():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_city_profile", {"city_id": "city_toronto"})
+    assert resp["ok"] is True
+    assert resp["tool"] == "get_city_profile"
+    assert resp["source_type"] == "seeded"
+    assert resp["telemetry"]["external_api_called"] is False
+    data = resp["data"]
+    for field in ("city_id", "name", "country", "timezone", "neighborhoods",
+                  "transport_notes", "matchday_notes", "safety_notes",
+                  "last_updated_at"):
+        assert field in data, f"city profile missing: {field}"
+
+
+@pytest.mark.asyncio
+async def test_profile_tools_missing_required_ids_return_invalid_input():
+    mcp = build_mcp_server()
+    team_resp = await call(mcp, "get_team_profile", {})
+    city_resp = await call(mcp, "get_city_profile", {})
+    assert team_resp["ok"] is False
+    assert team_resp["error"]["code"] == "INVALID_INPUT"
+    assert city_resp["ok"] is False
+    assert city_resp["error"]["code"] == "INVALID_INPUT"
+
+
+# ---------------------------------------------------------------------------
+# 07-03 — item-level signal provenance in venue and event records
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_get_venues_item_records_include_signal_provenance():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_venues", {"city_id": "city_toronto"})
+    assert resp["ok"] is True
+    venue = resp["data"]["venues"][0]
+    assert "verified_signals" in venue, "venue record missing verified_signals provenance"
+    assert "inferred_signals" in venue, "venue record missing inferred_signals provenance"
+    assert isinstance(venue["verified_signals"], list)
+    assert isinstance(venue["inferred_signals"], list)
+
+
+@pytest.mark.asyncio
+async def test_get_venues_top_level_signals_are_deduped_aggregate():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_venues", {"city_id": "city_toronto"})
+    assert resp["ok"] is True
+    data = resp["data"]
+    assert "verified_signals" in data, "top-level verified_signals missing"
+    assert "inferred_signals" in data, "top-level inferred_signals missing"
+    assert len(data["verified_signals"]) > 0, "expected at least one top-level verified signal"
+    assert len(data["inferred_signals"]) > 0, "expected at least one top-level inferred signal"
+
+
+@pytest.mark.asyncio
+async def test_get_city_events_item_records_include_signal_provenance():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_city_events", {"city_id": "city_toronto", "category": "matchday"})
+    assert resp["ok"] is True
+    event = resp["data"]["events"][0]
+    assert "verified_signals" in event, "event record missing verified_signals provenance"
+    assert "inferred_signals" in event, "event record missing inferred_signals provenance"
+    assert isinstance(event["verified_signals"], list)
+    assert isinstance(event["inferred_signals"], list)
+    data = resp["data"]
+    assert len(data["verified_signals"]) > 0, "expected non-empty top-level verified signals"
+    assert len(data["inferred_signals"]) > 0, "expected non-empty top-level inferred signals"
+
+
+# ---------------------------------------------------------------------------
+# 07-03 — smoke test: get_venues through public MCP boundary
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_get_venues_smoke_toronto_seeded_with_verified_signals():
+    """Manual smoke-test path: call get_venues through the MCP boundary the same way
+    ADK agents do, and confirm source_type is seeded and venue records carry signals."""
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_venues", {"city_id": "city_toronto"})
+    assert resp["ok"] is True
+    assert resp["source_type"] == "seeded"
+    venue = resp["data"]["venues"][0]
+    assert len(venue["verified_signals"]) > 0, "venue missing at least one verified signal"
+
+
+# ---------------------------------------------------------------------------
+# 07-03 — unknown city_id returns CITY_NOT_FOUND, not degraded empty
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_get_venues_unknown_city_returns_city_not_found():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_venues", {"city_id": "city_unknown_xyz"})
+    assert resp["ok"] is False
+    assert resp["error"]["code"] == "CITY_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+async def test_get_city_events_unknown_city_returns_city_not_found():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_city_events", {"city_id": "city_unknown_xyz"})
+    assert resp["ok"] is False
+    assert resp["error"]["code"] == "CITY_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+async def test_get_fan_hotspots_unknown_city_returns_city_not_found():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_fan_hotspots", {
+        "city_id": "city_unknown_xyz",
+        "match_id": "match_123",
+        "team_id": "team_usa",
+    })
+    assert resp["ok"] is False
+    assert resp["error"]["code"] == "CITY_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+async def test_get_city_profile_unknown_city_returns_city_not_found():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_city_profile", {"city_id": "city_unknown_xyz"})
+    assert resp["ok"] is False
+    assert resp["error"]["code"] == "CITY_NOT_FOUND"
+
+
+# ---------------------------------------------------------------------------
+# 07-03 — valid filters with no matching data return degraded empty, not errors
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_get_venues_no_match_filter_returns_degraded_empty():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_venues", {
+        "city_id": "city_toronto",
+        "venue_type": "nonexistent_type",
+    })
+    assert resp["ok"] is True
+    assert resp["data"]["venues"] == []
+    assert resp["telemetry"]["degraded"] is True
+    assert resp["telemetry"]["degraded_reason"] is not None
+
+
+@pytest.mark.asyncio
+async def test_get_city_events_no_match_filter_returns_degraded_empty():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_city_events", {
+        "city_id": "city_toronto",
+        "category": "nonexistent_category",
+    })
+    assert resp["ok"] is True
+    assert resp["data"]["events"] == []
+    assert resp["telemetry"]["degraded"] is True
+    assert resp["telemetry"]["degraded_reason"] is not None
+
+

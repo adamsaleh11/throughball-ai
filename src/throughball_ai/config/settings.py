@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     )
     max_output_tokens: int = Field(default=512, alias="MAX_OUTPUT_TOKENS", ge=1)
     default_temperature: float = Field(default=0.2, alias="DEFAULT_TEMPERATURE", ge=0, le=2)
+    max_agent_iterations: int = Field(default=3, alias="MAX_AGENT_ITERATIONS", ge=1)
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -6,50 +6,30 @@ city: Toronto
 country: Canada
 team: null
 category: tourism
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/canada/toronto
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/canada/toronto
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://www.bmofield.com/
+- https://www.destinationtoronto.com/
+- https://www.ttc.ca/
+last_updated: 2026-05-27
 confidence: medium
-tags: toronto,tourism,world-cup,fifa-2026,football,travel
+tags: toronto,tourism,world-cup-2026,football,travel
 
-## Summary
+## Visitor Context
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Tourism retrieval for Toronto should connect football travel with practical visitor anchors: CN Tower, Harbourfront, Kensington Market, St. Lawrence Market. These places help orient a fan's day, but they are not an itinerary by themselves. The AI should explain fit, distance, and matchday practicality while the backend handles ranking and sequencing.
 
-## Main Content
+## Matchday Pairing
 
-### Stadium and Matchday Context
+Good tourism advice depends on the match window. Before a match, favor attractions and districts that do not create a risky transfer to BMO Field. After a match, favor areas with realistic return transport and late-evening food or hotel access. For Toronto, useful pairing districts include King West, Queen West, Liberty Village, Ossington, Harbourfront; the constraint is: Union Station, GO Transit, TTC streetcars, and walking corridors will shape most central fan trips.
 
-BMO Field is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Use for short-stay ideas, neighborhood explanations, attraction context, and tradeoff language. Avoid claiming opening hours, ticket availability, prices, or crowd levels unless a current official source is retrieved.
 
-Important supporter and nightlife areas include King West, Queen West, Liberty Village, Ossington. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes TTC subway, GO Transit, Union Station. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include CN Tower, Harbourfront, Kensington Market. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Busy nightlife around downtown core during matchdays. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-toronto, BMO Field, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://www.bmofield.com/, https://www.destinationtoronto.com/, and https://www.ttc.ca/. Major attractions and visitor districts are grounded in official tourism resources. Popularity, wait times, hours, and event overlays are volatile and should be checked against current sources before making firm recommendations.

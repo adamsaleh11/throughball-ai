@@ -6,50 +6,30 @@ city: Monterrey
 country: Mexico
 team: null
 category: transportation
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/mexico/monterrey
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/mexico/monterrey
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://www.estadiobbva.mx/
+- https://www.nl.gob.mx/metrorrey
+- https://www.visitmexico.com/en/main-destinations/nuevo-leon/monterrey
+last_updated: 2026-05-27
 confidence: medium
-tags: monterrey,transportation,world-cup,fifa-2026,football,travel
+tags: monterrey,transportation,world-cup-2026,football,travel
 
-## Summary
+## Matchday Transportation
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Primary transportation context for Monterrey: Metrorrey, authorized taxis, rideshare corridors. Fans should combine heat planning with a confirmed return path from Guadalupe. The transportation document should ground mode choice and movement constraints, not compute a full route or live travel time. Stadium travel should be framed around Estadio BBVA in Guadalupe and the visitor districts Barrio Antiguo, San Pedro Garza Garcia, Parque Fundidora, Centro, Guadalupe.
 
-## Main Content
+## Arrival and Exit Planning
 
-### Stadium and Matchday Context
+For major fixtures, most fans should build a 2-4 hour pre-kickoff movement buffer depending on distance from the stadium. The longest buffers apply when the venue is regional or car-dependent; shorter buffers may work in compact downtown stadium districts. After final whistle, the first 45-90 minutes are likely to create the most pressure on transit platforms, parking exits, shuttle queues, and rideshare pickup areas.
 
-Estadio BBVA is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Use for airport-to-city context, stadium arrival planning, transit-vs-rideshare caveats, post-match exit expectations, and degradation language when live service details are missing. Always point users to official transit advisories for final event service.
 
-Important supporter and nightlife areas include San Pedro, Barrio Antiguo. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes Metrorrey system. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include Fundidora Park, Santa Lucia Riverwalk. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-High heat expected during daytime fixtures. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-monterrey, Estadio BBVA, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://www.estadiobbva.mx/, https://www.visitmexico.com/en/main-destinations/nuevo-leon/monterrey, and https://www.nl.gob.mx/metrorrey. Transit agency names, stadium geography, and broad mode availability are stable source-backed facts. Service frequency, road closures, shuttle operations, and disruptions are volatile and must not be invented.

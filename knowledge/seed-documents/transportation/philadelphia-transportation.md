@@ -3,53 +3,33 @@
 ## Metadata
 
 city: Philadelphia
-country: USA
+country: United States
 team: null
 category: transportation
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/philadelphia
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/philadelphia
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://www.lincolnfinancialfield.com/
+- https://www.septa.org/
+- https://www.discoverphl.com/
+last_updated: 2026-05-27
 confidence: medium
-tags: philadelphia,transportation,world-cup,fifa-2026,football,travel
+tags: philadelphia,transportation,world-cup-2026,football,travel
 
-## Summary
+## Matchday Transportation
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Primary transportation context for Philadelphia: SEPTA Broad Street Line, regional rail connections, rideshare and sports-complex parking. The Broad Street Line is a strong default for many fans, but the post-match surge should be expected. The transportation document should ground mode choice and movement constraints, not compute a full route or live travel time. Stadium travel should be framed around Lincoln Financial Field in Philadelphia and the visitor districts Center City, Old City, South Philadelphia, Fishtown, University City.
 
-## Main Content
+## Arrival and Exit Planning
 
-### Stadium and Matchday Context
+For major fixtures, most fans should build a 2-4 hour pre-kickoff movement buffer depending on distance from the stadium. The longest buffers apply when the venue is regional or car-dependent; shorter buffers may work in compact downtown stadium districts. After final whistle, the first 45-90 minutes are likely to create the most pressure on transit platforms, parking exits, shuttle queues, and rideshare pickup areas.
 
-Lincoln Financial Field is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Use for airport-to-city context, stadium arrival planning, transit-vs-rideshare caveats, post-match exit expectations, and degradation language when live service details are missing. Always point users to official transit advisories for final event service.
 
-Important supporter and nightlife areas include Center City, Fishtown, South Philly. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes SEPTA subway and regional rail. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include Liberty Bell, Reading Terminal Market. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Dense stadium district crowds expected. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-philadelphia, Lincoln Financial Field, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://www.lincolnfinancialfield.com/, https://www.discoverphl.com/, and https://www.septa.org/. Transit agency names, stadium geography, and broad mode availability are stable source-backed facts. Service frequency, road closures, shuttle operations, and disruptions are volatile and must not be invented.

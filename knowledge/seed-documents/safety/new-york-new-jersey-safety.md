@@ -1,55 +1,35 @@
-# New York New Jersey Safety
+# New York/New Jersey Safety
 
 ## Metadata
 
-city: New York New Jersey
-country: USA
+city: New York/New Jersey
+country: United States
 team: null
 category: safety
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/new-york-new-jersey
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/new-york-new-jersey
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://www.metlifestadium.com/
+- https://www.nyc.gov/site/em/index.page
+- https://www.nyctourism.com/
+last_updated: 2026-05-27
 confidence: medium
-tags: new-york-new-jersey,safety,world-cup,fifa-2026,football,travel
+tags: new-york-new-jersey,safety,world-cup-2026,football,travel
 
-## Summary
+## Safety Context
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Safety guidance for New York/New Jersey should be practical, calm, and tied to large-event travel. Transfer-point crowding between stadium, rail, buses, and Manhattan or New Jersey hotels is the main risk. The AI should avoid labeling whole neighborhoods as safe or unsafe. It should instead suggest behaviors: plan the route home, keep phones charged, use licensed or official transport, carry water where heat is relevant, and follow venue or city instructions.
 
-## Main Content
+## Visitor Risk Notes
 
-### Stadium and Matchday Context
+The most useful safety answer names the operational risk. Around MetLife Stadium, likely issues include crowd compression at exits, transit or rideshare queues, weather exposure, and confusion between visitor districts such as Manhattan, Hoboken, Jersey City, Newark, Meadowlands. If live public-safety or transit data is not available, the answer should say it is giving general planning guidance.
 
-MetLife Stadium is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Use for matchday safety caveats, confidence downgrades, weather-aware planning, late-night return advice, and official-source referrals. Do not imply real-time incident monitoring.
 
-Important supporter and nightlife areas include Manhattan sports bars, Hoboken, Williamsburg. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes NJ Transit, PATH, MTA subway. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include Times Square, Central Park, Brooklyn Bridge. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Heavy congestion expected around Secaucus Junction. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-new-york-new-jersey, MetLife Stadium, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://www.metlifestadium.com/, https://www.nyctourism.com/, and https://www.njtransit.com/. Emergency-management, tourism, transit, and venue sources provide stable public guidance. Street-level conditions and incident reports are volatile, so safety answers must avoid live certainty without current verified data.

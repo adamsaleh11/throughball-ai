@@ -3,53 +3,33 @@
 ## Metadata
 
 city: Houston
-country: USA
+country: United States
 team: null
 category: tourism
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/houston
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/houston
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://www.nrgpark.com/
+- https://www.visithoustontexas.com/
+- https://www.ridemetro.org/
+last_updated: 2026-05-27
 confidence: medium
-tags: houston,tourism,world-cup,fifa-2026,football,travel
+tags: houston,tourism,world-cup-2026,football,travel
 
-## Summary
+## Visitor Context
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Tourism retrieval for Houston should connect football travel with practical visitor anchors: Museum District, Space Center Houston, Buffalo Bayou Park, POST Houston. These places help orient a fan's day, but they are not an itinerary by themselves. The AI should explain fit, distance, and matchday practicality while the backend handles ranking and sequencing.
 
-## Main Content
+## Matchday Pairing
 
-### Stadium and Matchday Context
+Good tourism advice depends on the match window. Before a match, favor attractions and districts that do not create a risky transfer to NRG Stadium. After a match, favor areas with realistic return transport and late-evening food or hotel access. For Houston, useful pairing districts include Downtown, Midtown, EaDo, Museum District, Rice Village; the constraint is: METRORail helps for stadium access, while many visitors still combine transit with rideshare or driving.
 
-NRG Stadium is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Use for short-stay ideas, neighborhood explanations, attraction context, and tradeoff language. Avoid claiming opening hours, ticket availability, prices, or crowd levels unless a current official source is retrieved.
 
-Important supporter and nightlife areas include EaDo, Midtown, Downtown Houston. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes METRORail, buses. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include Space Center Houston, Museum District. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Heat and humidity management critical. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-houston, NRG Stadium, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://www.nrgpark.com/, https://www.visithoustontexas.com/, and https://www.ridemetro.org/. Major attractions and visitor districts are grounded in official tourism resources. Popularity, wait times, hours, and event overlays are volatile and should be checked against current sources before making firm recommendations.

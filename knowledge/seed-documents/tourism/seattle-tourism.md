@@ -3,53 +3,33 @@
 ## Metadata
 
 city: Seattle
-country: USA
+country: United States
 team: null
 category: tourism
-source_name: FIFA + Tourism Boards + Transit Authorities + Reddit Community Discussions
-source_url: https://www.fifa.com
-last_updated: 2026-05-26
+source_name: FIFA host and stadium information + official venue, tourism, transit, and public-safety sources
+source_url: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/seattle
+source_urls:
+- https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/usa/seattle
+- https://www.fifa.com/en/articles/stadium-information-details
+- https://www.lumenfield.com/
+- https://visitseattle.org/
+- https://www.soundtransit.org/
+last_updated: 2026-05-27
 confidence: medium
-tags: seattle,tourism,world-cup,fifa-2026,football,travel
+tags: seattle,tourism,world-cup-2026,football,travel
 
-## Summary
+## Visitor Context
 
-Curated semantic retrieval document for FIFA World Cup 2026 supporter intelligence, optimized for pgvector retrieval and Gemini Flash grounding.
+Tourism retrieval for Seattle should connect football travel with practical visitor anchors: Pike Place Market, Seattle Center, Waterfront, Museum of Pop Culture. These places help orient a fan's day, but they are not an itinerary by themselves. The AI should explain fit, distance, and matchday practicality while the backend handles ranking and sequencing.
 
-## Main Content
+## Matchday Pairing
 
-### Stadium and Matchday Context
+Good tourism advice depends on the match window. Before a match, favor attractions and districts that do not create a risky transfer to Lumen Field. After a match, favor areas with realistic return transport and late-evening food or hotel access. For Seattle, useful pairing districts include Pioneer Square, International District, Capitol Hill, Waterfront, Belltown; the constraint is: Many central visitors can use light rail or walk, but the station surge after the match still needs buffers.
 
-Lumen Field is expected to become one of the primary supporter gathering points during the tournament. Matchday movement patterns will likely begin several hours before kickoff and continue late into the evening.
+## Retrieval Notes
 
-### Supporter Districts
+Use for short-stay ideas, neighborhood explanations, attraction context, and tradeoff language. Avoid claiming opening hours, ticket availability, prices, or crowd levels unless a current official source is retrieved.
 
-Important supporter and nightlife areas include Capitol Hill, Pioneer Square, Waterfront. These districts contain dense restaurant, bar, and social activity useful for football tourists and fan meetups.
+## Source and Confidence Notes
 
-### Transportation Guidance
-
-Primary transportation infrastructure includes Link Light Rail, ferries. Public transportation is strongly recommended during major fixtures due to congestion and parking limitations.
-
-### Tourism Recommendations
-
-Popular tourism destinations include Pike Place Market, Space Needle. Visitors are encouraged to combine football activities with walkable tourism districts to reduce travel complexity.
-
-### Local Safety and Logistics
-
-Waterfront fan parks expected to become major hubs. Visitors should monitor official FIFA transportation updates and prioritize licensed transportation providers after evening matches.
-
-### Retrieval Notes
-
-This document intentionally prioritizes concise semantic density over encyclopedic detail in order to improve vector retrieval quality and reduce hallucination risk.
-
-## Key Facts
-
-* Optimized for AI concierge retrieval
-* Designed for semantic search ingestion
-* Focused on football tourism and supporter movement
-* Compatible with Supabase pgvector workflows
-* Structured for low-latency retrieval systems
-
-## Retrieval Keywords
-
-seattle, Lumen Field, world cup 2026, supporter guide, nightlife, transportation
+Official or stable sources used for grounding include FIFA host/stadium pages, https://www.lumenfield.com/, https://visitseattle.org/, and https://www.soundtransit.org/. Major attractions and visitor districts are grounded in official tourism resources. Popularity, wait times, hours, and event overlays are volatile and should be checked against current sources before making firm recommendations.
