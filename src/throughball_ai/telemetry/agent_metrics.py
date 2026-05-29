@@ -5,8 +5,6 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping, Optional
 
-from throughball_ai.adk.metrics import build_llm_metrics
-
 logger = logging.getLogger("throughball_ai.telemetry.agent_metrics")
 
 _DEFAULT_JSONL_PATH = "telemetry/agent_runs.jsonl"
@@ -84,6 +82,7 @@ class RunMetricsAccumulator:
         total_latency_ms: int = 0,
         self_check_passed: Optional[bool] = None,
     ) -> dict[str, Any]:
+        from throughball_ai.adk.metrics import build_llm_metrics  # lazy — breaks adk↔telemetry cycle
         model_name = self._model_name or "unknown"
         metrics = build_llm_metrics(
             model_name=model_name,
