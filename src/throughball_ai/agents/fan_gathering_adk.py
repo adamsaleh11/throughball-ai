@@ -8,7 +8,6 @@ assembles the structured response from tool result events.
 from __future__ import annotations
 
 import json
-import re
 import time
 from typing import Any, Optional
 
@@ -162,6 +161,13 @@ class FanGatheringADKAgent:
             tool_latencies["get_venues"] = latency
             return result
 
+        # --- Stable IDs and hooks — generated once per answer() call, shared by all callbacks ---
+        from throughball_ai.adk.callbacks import AdkCallbackHooks  # lazy — avoids adk↔telemetry cycle
+        hooks = AdkCallbackHooks()
+        request_id = new_id("req")
+        trace_id = new_id("tr")
+        agent_run_id = new_id("ar")
+
         # --- Budget callback — counter in ADK session state, not closure ---
         def _before_tool(tool, args, tool_context):
             count = int(tool_context.state.get("tool_call_count", 0))
@@ -170,12 +176,63 @@ class FanGatheringADKAgent:
             tool_context.state["tool_call_count"] = count + 1
             return None
 
-        # --- Model callback — capture model version for response ---
+        # --- After-tool callback — emits tool_call_completed telemetry (US-15) ---
+        def _after_tool(tool, args, tool_context, tool_response):
+            tool_name = tool.name
+            latency = tool_latencies.get(tool_name, 0)
+            is_degraded = (
+                not tool_response.get("ok", True)
+                or tool_response.get("telemetry", {}).get("degraded", False)
+            )
+            status = "degraded" if is_degraded else "ok"
+            hooks.on_tool_completed(
+                request_id=request_id,
+                trace_id=trace_id,
+                span_id=new_id("sp"),
+                parent_span_id=agent_run_id,
+                agent_run_id=agent_run_id,
+                session_id="",  # session not yet created; filled post-runner for agent event
+                tool_call_id=new_id("tc"),
+                tool_name=tool_name,
+                status=status,
+                latency_ms=latency,
+                degraded=is_degraded,
+            )
+            return None
+
+        # --- Model callbacks — timing + telemetry (US-14) ---
+        _model_call_start: list[float] = [0.0]
         _model_version: list[str] = [""]
+
+        def _before_model(callback_context, llm_request):
+            _model_call_start[0] = time.monotonic()
+            return None
 
         def _after_model(callback_context, llm_response):
             if llm_response.model_version:
                 _model_version[0] = llm_response.model_version
+            model_latency = int((time.monotonic() - _model_call_start[0]) * 1000)
+            usage_meta = getattr(llm_response, "usage_metadata", None) or {}
+            if hasattr(usage_meta, "prompt_token_count"):
+                usage = {
+                    "prompt_tokens": usage_meta.prompt_token_count or 0,
+                    "completion_tokens": usage_meta.candidates_token_count or 0,
+                    "total_tokens": usage_meta.total_token_count or 0,
+                }
+            else:
+                usage = {}
+            hooks.on_model_completed(
+                request_id=request_id,
+                trace_id=trace_id,
+                span_id=new_id("sp"),
+                parent_span_id=agent_run_id,
+                agent_run_id=agent_run_id,
+                session_id="",
+                model_name=_model_version[0] or self._model_name,
+                latency_ms=model_latency,
+                usage=usage,
+                tool_call_count=len(tool_latencies),
+            )
             return None
 
         # --- Build agent and runner ---
@@ -186,6 +243,8 @@ class FanGatheringADKAgent:
             instruction=_SYSTEM_INSTRUCTION,
             tools=[get_fan_hotspots, get_city_events, get_venues],
             before_tool_callback=_before_tool,
+            after_tool_callback=_after_tool,
+            before_model_callback=_before_model,
             after_model_callback=_after_model,
             generate_content_config=GenerateContentConfig(
                 max_output_tokens=self._settings.max_output_tokens,
@@ -232,21 +291,14 @@ class FanGatheringADKAgent:
         tool_call_count = len(tool_latencies)
         model_name = _model_version[0] or self._model_name
 
-        # Emit agent_run_completed via hooks
-        agent_run_id = new_id("ar")
-        trace_id = new_id("tr")
-        span_id = new_id("sp")
-        session_id = session.id
-
-        from throughball_ai.adk.callbacks import AdkCallbackHooks  # lazy — avoids adk↔telemetry cycle
-        hooks = AdkCallbackHooks()
+        # Emit agent_run_completed — IDs already generated above, shared with per-call callbacks
         hooks_event = hooks.on_agent_completed(
-            request_id=new_id("req"),
+            request_id=request_id,
             trace_id=trace_id,
-            span_id=span_id,
+            span_id=new_id("sp"),
             parent_span_id=None,
             agent_run_id=agent_run_id,
-            session_id=session_id,
+            session_id=session.id,
             agent_name=AGENT_NAME,
             latency_ms=total_latency_ms,
             degraded=degraded,
