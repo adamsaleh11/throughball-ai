@@ -166,6 +166,73 @@ class InMemoryEventsRepository:
         return [_without_internal_fields(row) for row in rows[:limit]]
 
 
+ROUTE_MODES: frozenset[str] = frozenset({"walk", "transit", "rideshare", "drive", "any"})
+
+
+class RouteContextRepository(Protocol):
+    def get_route(
+        self,
+        *,
+        city_id: str,
+        origin_id: str,
+        destination_id: str,
+        mode: str,
+    ) -> dict | None:
+        ...
+
+    def static_city_context(self, *, city_id: str, mode: str) -> dict | None:
+        ...
+
+
+class InMemoryRouteContextRepository:
+    """Seeded approximate route context. No live routing API.
+
+    Lookup is reverse-pair-tolerant: a miss on (origin, destination) retries the
+    reversed pair before falling back to static city-level guidance.
+    """
+
+    def __init__(
+        self,
+        routes: dict[tuple[str, str], dict] | None = None,
+        static_context: dict[str, dict] | None = None,
+    ) -> None:
+        self._routes = routes or SEEDED_ROUTES
+        self._static = static_context or STATIC_CITY_ROUTE_CONTEXT
+
+    def get_route(
+        self,
+        *,
+        city_id: str,
+        origin_id: str,
+        destination_id: str,
+        mode: str,
+    ) -> dict | None:
+        entry = self._routes.get((origin_id, destination_id)) or self._routes.get(
+            (destination_id, origin_id)
+        )
+        if entry is None:
+            return None
+        resolved = "transit" if mode == "any" else mode
+        mode_data = entry["modes"].get(resolved)
+        if mode_data is None:
+            return None
+        return {
+            "estimated_duration_minutes": mode_data["estimated_duration_minutes"],
+            "distance_km": entry["distance_km"],
+            "route_summary": mode_data["route_summary"],
+            "confidence": mode_data["confidence"],
+            "mode": resolved,
+            "computed_at": ROUTE_COMPUTED_AT,
+        }
+
+    def static_city_context(self, *, city_id: str, mode: str) -> dict | None:
+        ctx = self._static.get(city_id)
+        if ctx is None:
+            return None
+        resolved = "transit" if mode == "any" else mode
+        return {**ctx, "mode": resolved, "computed_at": ROUTE_COMPUTED_AT}
+
+
 def aggregate_signals(items: list[dict]) -> tuple[list[str], list[str]]:
     verified: list[str] = []
     inferred: list[str] = []
@@ -286,6 +353,77 @@ SEEDED_EVENTS = [
         "inferred_signals": ["Supporter venue tags indicate likely pre-match crowd"],
     },
 ]
+
+
+ROUTE_COMPUTED_AT = "2026-06-18T12:00:00Z"
+
+# Stadium-centric seeded routes. Reverse pairs are resolved by the repository,
+# so only one direction per pair is stored.
+SEEDED_ROUTES: dict[tuple[str, str], dict] = {
+    ("venue_pub_1", "venue_bmo_field"): {
+        "distance_km": 3.2,
+        "modes": {
+            "transit": {
+                "estimated_duration_minutes": 24,
+                "route_summary": "Streetcar west then a short walk into the stadium district.",
+                "confidence": "medium",
+            },
+            "walk": {
+                "estimated_duration_minutes": 41,
+                "route_summary": "Lakeshore walking route toward Exhibition Place.",
+                "confidence": "medium",
+            },
+            "rideshare": {
+                "estimated_duration_minutes": 14,
+                "route_summary": "Direct rideshare via Lake Shore Blvd.",
+                "confidence": "low",
+            },
+            "drive": {
+                "estimated_duration_minutes": 13,
+                "route_summary": "Drive via Lake Shore Blvd to stadium parking.",
+                "confidence": "low",
+            },
+        },
+    },
+    ("venue_fanzone_1", "venue_bmo_field"): {
+        "distance_km": 2.8,
+        "modes": {
+            "transit": {
+                "estimated_duration_minutes": 21,
+                "route_summary": "Streetcar from downtown toward Exhibition Place.",
+                "confidence": "medium",
+            },
+            "walk": {
+                "estimated_duration_minutes": 35,
+                "route_summary": "Downtown-to-stadium walking route along the waterfront.",
+                "confidence": "medium",
+            },
+            "rideshare": {
+                "estimated_duration_minutes": 12,
+                "route_summary": "Short rideshare to the stadium district.",
+                "confidence": "low",
+            },
+            "drive": {
+                "estimated_duration_minutes": 11,
+                "route_summary": "Drive toward Exhibition Place parking.",
+                "confidence": "low",
+            },
+        },
+    },
+}
+
+# Static fallback when a point-to-point pair is unknown. No precise duration claim.
+STATIC_CITY_ROUTE_CONTEXT: dict[str, dict] = {
+    "city_toronto": {
+        "estimated_duration_minutes": None,
+        "distance_km": None,
+        "route_summary": (
+            "Toronto has subway, streetcar, commuter rail, and rideshare coverage; "
+            "allow extra time on matchday."
+        ),
+        "confidence": "low",
+    }
+}
 
 
 SEEDED_HOTSPOTS = [

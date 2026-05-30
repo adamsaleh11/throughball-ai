@@ -7,8 +7,10 @@ from throughball_ai.mcp.tools import (
     get_city_events,
     get_fan_hotspots,
     get_match_state,
+    get_route_context,
     get_team_profile,
     get_venues,
+    generate_itinerary,
     search_documents,
 )
 
@@ -20,6 +22,8 @@ TOOL_MODULES = [
     get_venues,
     get_team_profile,
     get_city_profile,
+    get_route_context,
+    generate_itinerary,
 ]
 
 
@@ -117,6 +121,8 @@ def test_build_registry_returns_required_tools():
         "get_venues",
         "get_team_profile",
         "get_city_profile",
+        "get_route_context",
+        "generate_itinerary",
     }
 
 

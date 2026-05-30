@@ -87,6 +87,29 @@ class CityProfileInput(BaseToolInput):
     include_neighborhoods: bool = True
 
 
+class RoutePoint(BaseModel):
+    type: str
+    id: str
+
+
+class RouteContextInput(BaseToolInput):
+    city_id: str
+    origin: RoutePoint
+    destination: RoutePoint
+    departure_time: Optional[str] = None
+    mode: Literal["walk", "transit", "rideshare", "drive", "any"] = "any"
+
+
+class GenerateItineraryInput(BaseToolInput):
+    city_id: str
+    match_id: str
+    # Optional[...] (not just a default) so omitted args arriving as explicit None validate.
+    traveler_profile: Optional[dict[str, Any]] = None
+    ordered_candidate_ids: Optional[list[str]] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+
+
 MatchStateOutput = BaseToolResponse
 FanHotspotsOutput = BaseToolResponse
 CityEventsOutput = BaseToolResponse
@@ -94,3 +117,5 @@ VenuesOutput = BaseToolResponse
 SearchDocumentsOutput = BaseToolResponse
 TeamProfileOutput = BaseToolResponse
 CityProfileOutput = BaseToolResponse
+RouteContextOutput = BaseToolResponse
+GenerateItineraryOutput = BaseToolResponse

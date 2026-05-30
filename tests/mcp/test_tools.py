@@ -240,6 +240,18 @@ async def test_all_tools_return_declared_output_schema_shapes(monkeypatch):
         "search_documents": {"query": "supporter pubs"},
         "get_team_profile": {"team_id": "team_argentina"},
         "get_city_profile": {"city_id": "city_toronto"},
+        "get_route_context": {
+            "city_id": "city_toronto",
+            "origin": {"type": "venue", "id": "venue_pub_1"},
+            "destination": {"type": "venue", "id": "venue_bmo_field"},
+            "mode": "transit",
+        },
+        "generate_itinerary": {
+            "city_id": "city_toronto",
+            "match_id": "match_123",
+            "ordered_candidate_ids": ["venue_bmo_field"],
+            "start_date": "2026-06-18",
+        },
     }
 
     for tool_name, args in calls.items():
@@ -462,5 +474,234 @@ async def test_get_city_events_no_match_filter_returns_degraded_empty():
     assert resp["data"]["events"] == []
     assert resp["telemetry"]["degraded"] is True
     assert resp["telemetry"]["degraded_reason"] is not None
+
+
+# ---------------------------------------------------------------------------
+# 03-07 Phase 1 — get_route_context
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_get_route_context_seeded_pair_returns_ok_shape():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_route_context", {
+        "city_id": "city_toronto",
+        "origin": {"type": "venue", "id": "venue_pub_1"},
+        "destination": {"type": "venue", "id": "venue_bmo_field"},
+        "mode": "transit",
+    })
+    assert resp["ok"] is True
+    assert resp["tool"] == "get_route_context"
+    assert resp["source_type"] == "seeded"
+    assert resp["telemetry"]["external_api_called"] is False
+    data = resp["data"]
+    assert data["city_id"] == "city_toronto"
+    assert data["origin_id"] == "venue_pub_1"
+    assert data["destination_id"] == "venue_bmo_field"
+    assert data["mode"] == "transit"
+    assert isinstance(data["estimated_duration_minutes"], int)
+    assert isinstance(data["distance_km"], (int, float))
+    assert isinstance(data["route_summary"], str) and data["route_summary"]
+    assert data["confidence"] in ("low", "medium", "high")
+    assert "computed_at" in data
+
+
+@pytest.mark.asyncio
+async def test_get_route_context_reverse_pair_resolves_same_route():
+    mcp = build_mcp_server()
+    forward = await call(mcp, "get_route_context", {
+        "city_id": "city_toronto",
+        "origin": {"type": "venue", "id": "venue_pub_1"},
+        "destination": {"type": "venue", "id": "venue_bmo_field"},
+        "mode": "transit",
+    })
+    reverse = await call(mcp, "get_route_context", {
+        "city_id": "city_toronto",
+        "origin": {"type": "venue", "id": "venue_bmo_field"},
+        "destination": {"type": "venue", "id": "venue_pub_1"},
+        "mode": "transit",
+    })
+    assert reverse["ok"] is True
+    assert reverse["data"]["estimated_duration_minutes"] == forward["data"]["estimated_duration_minutes"]
+    assert reverse["data"]["distance_km"] == forward["data"]["distance_km"]
+    assert reverse["data"]["origin_id"] == "venue_bmo_field"
+    assert reverse["data"]["destination_id"] == "venue_pub_1"
+
+
+@pytest.mark.asyncio
+async def test_get_route_context_unknown_pair_degrades_to_static():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_route_context", {
+        "city_id": "city_toronto",
+        "origin": {"type": "venue", "id": "venue_pub_1"},
+        "destination": {"type": "venue", "id": "venue_fanzone_1"},
+        "mode": "transit",
+    })
+    assert resp["ok"] is True
+    assert resp["telemetry"]["degraded"] is True
+    assert resp["telemetry"]["degraded_reason"] == "POINT_TO_POINT_ROUTE_UNAVAILABLE"
+    assert resp["data"]["confidence"] == "low"
+    assert resp["data"]["estimated_duration_minutes"] is None
+
+
+@pytest.mark.asyncio
+async def test_get_route_context_any_mode_resolves_to_transit():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_route_context", {
+        "city_id": "city_toronto",
+        "origin": {"type": "venue", "id": "venue_pub_1"},
+        "destination": {"type": "venue", "id": "venue_bmo_field"},
+        "mode": "any",
+    })
+    assert resp["ok"] is True
+    assert resp["data"]["mode"] == "transit"
+
+
+@pytest.mark.asyncio
+async def test_get_route_context_missing_points_returns_invalid_input():
+    mcp = build_mcp_server()
+    no_city = await call(mcp, "get_route_context", {
+        "origin": {"type": "venue", "id": "venue_pub_1"},
+        "destination": {"type": "venue", "id": "venue_bmo_field"},
+    })
+    assert no_city["ok"] is False
+    assert no_city["error"]["code"] == "INVALID_INPUT"
+
+
+@pytest.mark.asyncio
+async def test_get_route_context_invalid_mode_returns_invalid_input():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "get_route_context", {
+        "city_id": "city_toronto",
+        "origin": {"type": "venue", "id": "venue_pub_1"},
+        "destination": {"type": "venue", "id": "venue_bmo_field"},
+        "mode": "teleport",
+    })
+    assert resp["ok"] is False
+    assert resp["error"]["code"] == "INVALID_INPUT"
+
+
+@pytest.mark.asyncio
+async def test_get_route_context_registered():
+    mcp = build_mcp_server()
+    tools = await mcp.list_tools()
+    assert "get_route_context" in {t.name for t in tools}
+
+
+# ---------------------------------------------------------------------------
+# 03-07 Phase 2 — generate_itinerary
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_generate_itinerary_returns_day_structured_items():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "generate_itinerary", {
+        "city_id": "city_toronto",
+        "match_id": "match_123",
+        "traveler_profile": {"party_size": 2, "budget": "medium", "interests": ["supporter pubs"]},
+        "ordered_candidate_ids": ["venue_pub_1", "venue_bmo_field"],
+        "start_date": "2026-06-18",
+        "end_date": "2026-06-20",
+    })
+    assert resp["ok"] is True
+    assert resp["tool"] == "generate_itinerary"
+    assert resp["source_type"] == "seeded"
+    assert resp["telemetry"]["external_api_called"] is False
+    data = resp["data"]
+    assert data["city_id"] == "city_toronto"
+    assert data["match_id"] == "match_123"
+    assert isinstance(data["days"], list) and len(data["days"]) >= 1
+    day = data["days"][0]
+    assert "date" in day and isinstance(day["items"], list)
+    item = day["items"][0]
+    for field in ("start_time", "end_time", "item_type", "item_id", "title", "explanation"):
+        assert field in item, f"item missing: {field}"
+    assert isinstance(data["assumptions"], list) and len(data["assumptions"]) >= 1
+
+
+@pytest.mark.asyncio
+async def test_generate_itinerary_anchors_stadium_to_kickoff():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "generate_itinerary", {
+        "city_id": "city_toronto",
+        "match_id": "match_123",
+        "ordered_candidate_ids": ["venue_fanzone_1", "venue_bmo_field"],
+        "start_date": "2026-06-18",
+        "end_date": "2026-06-20",
+    })
+    matchday = next(d for d in resp["data"]["days"] if d["date"] == "2026-06-18")
+    stadium_item = next(i for i in matchday["items"] if i["item_id"] == "venue_bmo_field")
+    assert stadium_item["start_time"] == "15:00"
+    # Fan zone (matchday-tagged) is placed before kickoff on the same day.
+    fanzone_item = next(i for i in matchday["items"] if i["item_id"] == "venue_fanzone_1")
+    assert fanzone_item["end_time"] <= "15:00"
+
+
+@pytest.mark.asyncio
+async def test_generate_itinerary_enforces_caps():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "generate_itinerary", {
+        "city_id": "city_toronto",
+        "match_id": "match_123",
+        "ordered_candidate_ids": ["venue_pub_1"] * 13,
+        "start_date": "2026-06-18",
+        "end_date": "2026-06-20",
+    })
+    days = resp["data"]["days"]
+    assert len(days) <= 3
+    total = sum(len(d["items"]) for d in days)
+    assert total <= 12
+    assert all(len(d["items"]) <= 4 for d in days)
+
+
+@pytest.mark.asyncio
+async def test_generate_itinerary_empty_candidates_returns_missing_error():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "generate_itinerary", {
+        "city_id": "city_toronto",
+        "match_id": "match_123",
+        "ordered_candidate_ids": [],
+        "start_date": "2026-06-18",
+    })
+    assert resp["ok"] is False
+    assert resp["error"]["code"] == "MISSING_ORDERED_CANDIDATES"
+
+
+@pytest.mark.asyncio
+async def test_generate_itinerary_fewer_candidates_yields_fewer_days_no_empty():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "generate_itinerary", {
+        "city_id": "city_toronto",
+        "match_id": "match_123",
+        "ordered_candidate_ids": ["venue_bmo_field"],
+        "start_date": "2026-06-18",
+        "end_date": "2026-06-20",
+    })
+    days = resp["data"]["days"]
+    assert len(days) == 1
+    assert all(len(d["items"]) >= 1 for d in days)
+
+
+@pytest.mark.asyncio
+async def test_generate_itinerary_formatting_failure_returns_skeleton():
+    mcp = build_mcp_server()
+    resp = await call(mcp, "generate_itinerary", {
+        "city_id": "city_toronto",
+        "match_id": "match_123",
+        "ordered_candidate_ids": ["venue_pub_1", "venue_bmo_field"],
+        "start_date": "not-a-real-date",
+    })
+    assert resp["ok"] is True
+    assert resp["telemetry"]["degraded"] is True
+    assert resp["telemetry"]["degraded_reason"] == "ITINERARY_FORMATTING_TIMEOUT"
+    # Skeleton preserves supplied order.
+    ids = [i["item_id"] for d in resp["data"]["days"] for i in d["items"]]
+    assert ids == ["venue_pub_1", "venue_bmo_field"]
+
+
+@pytest.mark.asyncio
+async def test_generate_itinerary_registered():
+    mcp = build_mcp_server()
+    tools = await mcp.list_tools()
+    assert "generate_itinerary" in {t.name for t in tools}
 
 
